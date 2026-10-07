@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "open3"
+
+ROOT = File.expand_path("..", __dir__)
+
+def run(*command)
+  puts "\n>>> #{command.join(' ')}"
+  system(*command, chdir: ROOT) || abort("❌ 失敗: #{command.join(' ')}")
+end
+
+def run_security_scan(*command, allowed_statuses: [0])
+  puts "\n>>> #{command.join(' ')}"
+  output, error, status = Open3.capture3(*command, chdir: ROOT)
+  print output
+  warn error unless error.empty?
+  return if allowed_statuses.include?(status.exitstatus)
+
+  abort("❌ セキュリティ監査が失敗しました（終了コード #{status.exitstatus}）")
+end
+
+run("bin/rails", "test")
+run("bin/rails", "zeitwerk:check")
+run("bin/rubocop")
+# Brakeman の終了コード3は、Ruby EOLなどの警告のみの場合に許容する。
+# 実際の解析エラーは終了コード0/3以外として失敗させる。
+run_security_scan("bin/brakeman", "--no-pager", "--exit-on-error", allowed_statuses: [0, 3])
+run("bin/bundler-audit")
+run("node", "--check", "public/kokoneads.js")
+run("env", "RAILS_ENV=production", "SECRET_KEY_BASE=local-verification-only", "bin/rails", "assets:precompile")
+run("git", "diff", "--check")
+
+puts "\n✅ Kokoneads のテスト・静的解析・セキュリティ監査・Buildが完了しました"

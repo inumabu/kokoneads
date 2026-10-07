@@ -1,0 +1,83 @@
+name: 🧪 kokoneads CI 検証
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  scan_ruby:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 ソース取得
+        uses: actions/checkout@v4
+
+      - name: 💎 Ruby セットアップ
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: 🔐 Rails セキュリティ静的解析
+        run: bin/brakeman --no-pager
+      
+      - name: 🛡️ Ruby 依存関係監査
+        run: bin/bundler-audit
+      
+  scan_js:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 ソース取得
+        uses: actions/checkout@v4
+
+      - name: 💎 Ruby セットアップ
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: 🟨 JavaScript 依存関係監査
+        run: bin/importmap audit
+
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    steps:
+      - name: 📥 ソース取得
+        uses: actions/checkout@v4
+
+      - name: 💎 Ruby セットアップ
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: ⚡ RuboCop キャッシュ準備
+        uses: actions/cache@v4
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
+        with:
+          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
+
+      - name: 🧹 RuboCop スタイル検査
+        run: bin/rubocop -f github
+
+
+  test:
+    name: ✅ Rails テスト・ロードチェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 ソース取得
+        uses: actions/checkout@v4
+      - name: 💎 Ruby セットアップ
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: ✅ 一括検証
+        run: bin/verify

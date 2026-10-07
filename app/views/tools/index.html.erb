@@ -1,0 +1,31 @@
+<%= render "shell", active_slug: nil do %>
+  <section class="hero-block">
+    <div>
+      <p class="eyebrow">YOUR DAILY TOOLKIT <span class="eyebrow-dot"></span></p>
+      <h1>迷ったら、<span>ここ。</span></h1>
+      <p class="hero-copy">毎日の小さな作業を、ひとつの場所で。<br>軽くて、速くて、すぐ使えるツールだけを集めました。</p>
+    </div>
+    <div class="hero-note">
+      <span class="note-mark">✦</span>
+      <p>ログイン不要。<br><strong>使った瞬間から、あなたの道具。</strong></p>
+    </div>
+  </section>
+
+  <section class="section-heading">
+    <div>
+      <p class="eyebrow">ALL TOOLS</p>
+      <h2>よく使うツール</h2>
+    </div>
+    <span class="tool-count"><%= @tools.size %> tools</span>
+  </section>
+
+  <div class="tool-grid" data-tool-grid>
+    <% @tools.each do |tool| %>
+      <%= link_to tool_path(tool[:slug]), class: "tool-card accent-#{tool[:accent]}", data: { tool_card: true, category: tool[:category], name: tool[:name] } do %>
+        <div class="card-top"><span class="tool-icon"><%= tool[:icon] %></span><span class="arrow">↗</span></div>
+        <div class="card-body"><span class="card-category"><%= tool[:category] %></span><h3><%= tool[:name] %></h3><p><%= tool[:description] %></p></div>
+        <div class="card-footer"><span><%= tool[:meta] %></span><span class="card-line"></span></div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,37 @@
+<% content_for :title, "#{@tool[:name]} — kokoneads" %>
+<%= render "shell", active_slug: @tool[:slug] do %>
+  <div class="tool-page-head">
+    <%= link_to "← ツール一覧", root_path, class: "back-link" %>
+    <div class="tool-page-title"><span class="tool-icon accent-<%= @tool[:accent] %>"><%= @tool[:icon] %></span><div><p class="eyebrow"><%= @tool[:category] %> TOOL</p><h1><%= @tool[:name] %></h1></div><% if logged_in? %><% if @saved_slugs.include?(@tool[:slug]) %><%= button_to "★ 保存済み", unsave_tool_path(@tool[:slug]), method: :delete, class: "save-button saved" %><% else %><%= button_to "☆ お気に入り", save_tool_path(@tool[:slug]), method: :post, class: "save-button" %><% end %><% else %><%= link_to "☆ お気に入り", login_path, class: "save-button" %><% end %></div>
+    <p class="tool-page-description"><%= @tool[:description] %></p>
+  </div>
+  <section class="workspace" data-workspace="<%= @tool[:slug] %>" data-history-url="<%= tool_history_path(@tool[:slug]) %>">
+    <div class="workspace-toolbar"><span class="status-dot"></span><span>ブラウザ上で処理しています。入力内容は保存されません。</span><button class="ghost-button" data-copy-result>結果をコピー</button><button class="ghost-button" data-clear>クリア</button></div>
+    <% case @tool[:slug] %>
+    <% when "json" %>
+      <div class="split-pane"><div class="pane"><label for="json-input">INPUT</label><textarea id="json-input" data-json-input placeholder='{"name":"kokoneads","active":true}'></textarea></div><div class="pane result-pane"><label>FORMATTED JSON</label><pre data-json-output>ここに整形結果が表示されます</pre></div></div><div class="workspace-actions"><button class="primary-button" data-json-format>整形する <span>⌘ Enter</span></button></div>
+    <% when "text" %>
+      <div class="text-tool"><textarea data-text-input placeholder="ここにテキストを入力してください…"></textarea><div class="stats-row"><div><strong data-stat="chars">0</strong><span>文字</span></div><div><strong data-stat="no-spaces">0</strong><span>空白なし</span></div><div><strong data-stat="lines">0</strong><span>行</span></div><div><strong data-stat="bytes">0</strong><span>バイト</span></div></div></div>
+    <% when "url" %>
+      <div class="split-pane"><div class="pane"><label>PLAIN TEXT</label><textarea data-url-input placeholder="https://example.com/こんにちは"></textarea></div><div class="pane result-pane"><label>ENCODED URL</label><textarea data-url-output readonly></textarea></div></div><div class="workspace-actions"><button class="primary-button" data-url-encode>エンコード</button><button class="secondary-button" data-url-decode>デコード</button></div>
+    <% when "base64" %>
+      <div class="split-pane"><div class="pane"><label>PLAIN TEXT</label><textarea data-base-input placeholder="変換したい文字列"></textarea></div><div class="pane result-pane"><label>BASE64</label><textarea data-base-output readonly></textarea></div></div><div class="workspace-actions"><button class="primary-button" data-base-encode>エンコード</button><button class="secondary-button" data-base-decode>デコード</button></div>
+    <% when "color" %>
+      <div class="color-tool"><div class="color-preview" data-color-preview></div><div class="color-controls"><label>HEX COLOR</label><div class="color-input-row"><input type="color" value="#6d5dfc" data-color-picker><input type="text" value="#6d5dfc" data-color-hex></div><div class="color-values"><div><span>RGB</span><strong data-color-rgb>109, 93, 252</strong></div><div><span>HSL</span><strong data-color-hsl>245°, 96%, 68%</strong></div></div></div></div>
+    <% when "markdown" %>
+      <div class="split-pane markdown-pane"><div class="pane"><label>MARKDOWN</label><textarea data-markdown-input># kokoneads\n\n**すぐ使える**ツールを、ここに。</textarea></div><div class="pane result-pane"><label>PREVIEW</label><div class="markdown-output" data-markdown-output></div></div></div>
+    <% when "timestamp" %>
+      <div class="utility-panel timestamp-panel"><div class="now-card"><span class="eyebrow">CURRENT UNIX TIME</span><strong data-timestamp-now>—</strong><button class="secondary-button" data-timestamp-now-button>現在時刻を取得</button></div><div class="conversion-row"><div><label>日時 → UNIX</label><input type="datetime-local" data-timestamp-date></div><button class="primary-button" data-timestamp-to-unix>変換</button><div class="result-box" data-timestamp-unix>—</div></div><div class="conversion-row"><div><label>UNIX → 日時</label><input type="text" data-unix-input placeholder="1700000000"></div><button class="primary-button" data-unix-to-date>変換</button><div class="result-box" data-unix-date>—</div></div></div>
+    <% when "uuid" %>
+      <div class="utility-panel"><div class="utility-head"><div><span class="eyebrow">UUID VERSION 4</span><h2>必要な数だけ生成</h2></div><div class="inline-control"><label>個数</label><input type="number" min="1" max="20" value="5" data-uuid-count></div></div><div class="generated-list" data-uuid-output></div><div class="workspace-actions"><button class="primary-button" data-uuid-generate>UUIDを生成</button></div></div>
+    <% when "hash" %>
+      <div class="utility-panel"><label>TEXT TO HASH</label><textarea class="single-textarea" data-hash-input placeholder="ハッシュ化する文字列"></textarea><div class="hash-row"><select data-hash-algorithm><option value="SHA-256">SHA-256</option><option value="SHA-1">SHA-1</option><option value="MD5">MD5（互換用）</option></select><button class="primary-button" data-hash-generate>ハッシュを生成</button></div><div class="hash-output" data-hash-output>—</div></div>
+    <% when "regex" %>
+      <div class="utility-panel"><div class="regex-row"><div><label>REGULAR EXPRESSION</label><input type="text" data-regex-pattern placeholder="\\b[A-Z][a-z]+\\b"></div><div><label>FLAGS</label><input type="text" data-regex-flags value="g"></div></div><label>TEST TEXT</label><textarea class="single-textarea" data-regex-text placeholder="ここにテスト対象の文章を入力"></textarea><div class="regex-result" data-regex-output>パターンを入力すると結果を表示します</div></div>
+    <% when "diff" %>
+      <div class="split-pane"><div class="pane"><label>ORIGINAL</label><textarea data-diff-left placeholder="変更前のテキスト"></textarea></div><div class="pane"><label>UPDATED</label><textarea data-diff-right placeholder="変更後のテキスト"></textarea></div></div><div class="diff-output" data-diff-output>2つのテキストを入力すると差分を表示します</div>
+    <% when "html" %>
+      <div class="split-pane"><div class="pane"><label>INPUT</label><textarea data-html-input placeholder="<section>安全に表示したいHTML</section>"></textarea></div><div class="pane result-pane"><label>OUTPUT</label><textarea data-html-output readonly></textarea></div></div><div class="workspace-actions"><button class="primary-button" data-html-escape>エスケープ</button><button class="secondary-button" data-html-unescape>復元</button></div>
+    <% end %>
+  </section>
+<% end %>

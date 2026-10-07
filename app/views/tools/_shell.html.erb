@@ -1,0 +1,17 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <%= link_to root_path, class: "brand" do %><span class="brand-symbol">k</span><span>kokoneads</span><% end %>
+    <p class="sidebar-label">COLLECTION</p>
+    <nav class="side-nav">
+      <%= link_to root_path, class: (active_slug.nil? ? "nav-item active" : "nav-item") do %><span class="nav-icon">⌂</span> Overview<% end %>
+      <% [["開発", "⌘"], ["文章", "Aa"], ["デザイン", "◌"]].each do |name, icon| %><span class="nav-item muted"><span class="nav-icon"><%= icon %></span><%= name %><span class="nav-badge"><%= @tools.count { |t| t[:category] == name } %></span></span><% end %>
+      <% if logged_in? %><%= link_to account_path, class: "nav-item #{active_slug == "account" ? "active" : ""}" do %><span class="nav-icon">☆</span> My workspace<% end %><% end %>
+    </nav>
+    <div class="sidebar-bottom"><div class="tip-card"><span>✦</span><p>小さな作業を、<br><strong>軽やかに。</strong></p></div><p class="version">KOKONEADS / 2026</p></div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar"><div class="mobile-brand">k<span>kokoneads</span></div><label class="search-box"><span>⌕</span><input type="search" placeholder="ツールを検索…" data-tool-search><kbd>⌘ K</kbd></label><div class="top-actions"><span class="online"><i></i> All systems normal</span><% if logged_in? %><%= link_to account_path, class: "user-chip" do %><span class="avatar"><%= current_user.display_name.first.upcase %></span><span><%= current_user.display_name %></span><% end %><% else %><%= link_to "ログイン", login_path, class: "login-link" %><%= link_to "アカウント作成", signup_path, class: "signup-link" %><% end %></div></header>
+    <div class="content-wrap"><%= render "shared/flash" %><%= yield %></div>
+    <footer class="site-footer"><span>kokoneads — made for the in-between moments.</span><span>シンプルに、ちゃんと便利。</span></footer>
+  </main>
+</div>
